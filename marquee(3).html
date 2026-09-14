@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marquee</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E1013;
+  --surface: #171B20;
+  --surface-raised: #1F252C;
+  --border: #2A313A;
+  --accent: #E8A33D;
+  --accent-dim: #B97F2C;
+  --text: #EDEAE3;
+  --text-muted: #8B92A0;
+  --rust: #C96A54;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Work Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+* { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
+a, button { color: inherit; }
+button { font-family: var(--font-body); cursor: pointer; }
+
+.topbar { display: flex; align-items: center; gap: 24px; padding: 18px 32px; border-bottom: 1px solid var(--border); }
+.wordmark { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 22px; color: var(--accent); background: none; border: none; padding: 0; }
+.topbar-search { flex: 1; max-width: 420px; }
+.topbar-search input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 9px 14px; color: var(--text); font-size: 14px; }
+.topbar-search input:focus { outline: none; border-color: var(--accent-dim); }
+.topbar-nav { margin-left: auto; display: flex; gap: 10px; }
+.icon-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 8px 14px; font-size: 13px; color: var(--text-muted); }
+.icon-btn:hover { color: var(--text); border-color: var(--accent-dim); }
+
+main { padding: 28px 32px 64px; max-width: 1400px; margin: 0 auto; }
+.view { display: none; }
+.view.is-active { display: block; }
+
+.page-head { margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.tabs { display: flex; gap: 6px; }
+.tab { background: none; border: none; color: var(--text-muted); font-size: 15px; padding: 8px 4px; border-bottom: 2px solid transparent; }
+.tab.is-active { color: var(--text); border-bottom-color: var(--accent); }
+.tab:hover { color: var(--text); }
+
+.empty-state { text-align: center; padding: 100px 20px; max-width: 520px; margin: 0 auto; }
+.empty-state h1 { font-family: var(--font-display); font-weight: 400; font-size: 32px; margin-bottom: 12px; }
+.empty-state p { color: var(--text-muted); margin-bottom: 26px; line-height: 1.6; }
+
+.btn { display: inline-block; background: var(--accent); color: #171200; font-weight: 600; font-size: 14px; padding: 11px 22px; border-radius: var(--radius-m); border: none; }
+.btn:hover { background: #f0b158; }
+.btn-secondary { background: none; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent-dim); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 18px; }
+.card { display: block; background: none; border: none; text-align: left; padding: 0; font: inherit; }
+.poster { position: relative; aspect-ratio: 2 / 3; border-radius: var(--radius-s); overflow: hidden; background: var(--surface); border: 1px solid var(--border); transition: transform 0.18s ease, border-color 0.18s ease; }
+.poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.poster-fallback { height: 100%; display: flex; align-items: center; justify-content: center; padding: 14px; text-align: center; font-family: var(--font-display); font-style: italic; font-size: 17px; color: var(--text-muted); }
+.card:hover .poster { transform: translateY(-3px); border-color: var(--accent-dim); }
+.card-meta { margin-top: 8px; }
+.card-title { font-size: 14px; font-weight: 500; line-height: 1.3; }
+.card-year { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.badge-show { position: absolute; top: 8px; right: 8px; background: rgba(14,16,19,0.75); color: var(--accent); font-size: 10.5px; padding: 2px 7px; border-radius: 3px; border: 1px solid var(--border); }
+
+.back-link { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; color: var(--text-muted); font-size: 14px; margin-bottom: 18px; padding: 0; }
+.back-link:hover { color: var(--accent); }
+.show-title { font-family: var(--font-display); font-weight: 400; font-size: 34px; margin: 0 0 22px; }
+.season-pills { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.pill { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); border-radius: 999px; padding: 6px 16px; font-size: 13px; }
+.pill.is-active { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+.episode-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.episode-row { border-bottom: 1px solid var(--border); }
+.episode-row button { display: flex; align-items: center; gap: 18px; padding: 16px 6px; width: 100%; background: none; border: none; text-align: left; }
+.episode-row button:hover { background: var(--surface); }
+.episode-num { font-family: var(--font-display); font-style: italic; color: var(--accent); font-size: 20px; width: 34px; flex-shrink: 0; }
+.episode-title { flex: 1; font-size: 15px; }
+.episode-play { color: var(--text-muted); font-size: 13px; opacity: 0; transition: opacity 0.15s ease; }
+.episode-row button:hover .episode-play { opacity: 1; }
+
+.player-overlay { position: fixed; inset: 0; background: #000; z-index: 50; display: none; flex-direction: column; }
+.player-overlay.is-active { display: flex; }
+.player-topbar { display: flex; align-items: center; gap: 20px; padding: 16px 24px; }
+.player-title { font-family: var(--font-display); font-weight: 400; font-size: 18px; margin: 0; }
+.player-wrap { flex: 1; display: flex; flex-direction: column; align-items: stretch; justify-content: center; padding: 0 16px 16px; min-height: 0; }
+.player-inner { display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; }
+.video-shell { position: relative; width: 100%; height: 100%; flex: 1; min-height: 0; display: flex; }
+#player { width: 100%; height: 100%; display: block; background: #000; object-fit: contain; }
+.big-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 68px; border-radius: 50%; background: rgba(232, 163, 61, 0.92); color: #171200; border: none; display: flex; align-items: center; justify-content: center; padding-left: 4px; opacity: 1; transition: opacity 0.2s ease, transform 0.15s ease; }
+.big-play svg { width: 28px; height: 28px; flex-shrink: 0; }
+.big-play:hover { background: var(--accent); transform: translate(-50%, -50%) scale(1.05); }
+.big-play.is-hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.85); }
+.controls-bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 14px; padding: 12px 20px 16px; background: linear-gradient(to top, rgba(0,0,0,0.88), rgba(0,0,0,0)); opacity: 1; transition: opacity 0.25s ease; z-index: 2; }
+.controls-bar.is-hidden { opacity: 0; pointer-events: none; }
+.ctl-btn { background: none; border: none; color: var(--text); display: flex; align-items: center; padding: 4px; flex-shrink: 0; }
+.ctl-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.ctl-btn:hover { color: var(--accent); }
+.time-label { font-size: 12px; color: var(--text-muted); min-width: 40px; text-align: center; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.seek-bar, .volume-bar { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; outline: none; background: var(--border); cursor: pointer; }
+.seek-bar { flex: 1; }
+.volume-bar { width: 72px; }
+.seek-bar::-webkit-slider-thumb, .volume-bar::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+.seek-bar::-moz-range-thumb, .volume-bar::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; }
+.audio-hint { font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center; }
+.player-error { max-width: 480px; text-align: center; color: var(--text-muted); line-height: 1.6; }
+.player-error strong { color: var(--rust); display: block; margin-bottom: 8px; font-size: 15px; }
+.player-error code { background: var(--surface); padding: 2px 6px; border-radius: 3px; font-size: 12.5px; word-break: break-all; }
+
+.folder-note { color: var(--text-muted); font-size: 13px; margin-top: -10px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="wordmark" onclick="goLibrary()">Marquee</button>
+  <div class="topbar-search">
+    <input id="global-search" type="text" placeholder="Search your library" autocomplete="off" oninput="renderLibraryGrid()">
+  </div>
+  <nav class="topbar-nav">
+    <button class="icon-btn" id="add-folder-btn">Add folder</button>
+  </nav>
+</header>
+
+<input type="file" id="folder-input" webkitdirectory directory multiple hidden>
+
+<main>
+
+  <section id="view-library" class="view is-active">
+    <div id="empty-state" class="empty-state">
+      <h1>Point Marquee at your drive</h1>
+      <p>Plug in your thumb drive, then choose the folder with your movies and shows. Nothing leaves your computer — the browser reads the files directly.</p>
+      <button class="btn" id="empty-add-folder-btn">Choose folder</button>
+    </div>
+
+    <div id="library-content" style="display:none;">
+      <div class="page-head">
+        <div class="tabs" role="tablist">
+          <button class="tab is-active" data-filter="all">Everything</button>
+          <button class="tab" data-filter="movies">Movies</button>
+          <button class="tab" data-filter="shows">Shows</button>
+        </div>
+      </div>
+      <p class="folder-note">Since your browser doesn't remember file access between sessions, you'll need to pick the folder again next time you open this page.</p>
+      <section id="grid" class="grid"></section>
+    </div>
+  </section>
+
+  <section id="view-show" class="view">
+    <button class="back-link" onclick="goLibrary()">&larr; Library</button>
+    <h1 class="show-title" id="show-title"></h1>
+    <div class="season-pills" id="season-pills"></div>
+    <div id="episode-lists"></div>
+  </section>
+
+</main>
+
+<div class="player-overlay" id="player-overlay">
+  <div class="player-topbar">
+    <button class="back-link" onclick="closePlayer()">&larr; Back</button>
+    <h1 class="player-title" id="player-title"></h1>
+  </div>
+<div class="player-wrap" id="player-wrap"></div>
+</div>
+
+<script>
+const VIDEO_EXTS = new Set(['mp4','mkv','avi','mov','webm','m4v','wmv','flv']);
+const EPISODE_PATTERNS = [
+  /[Ss](\d{1,2})[\s._-]*[Ee](\d{1,3})/,
+  /(\d{1,2})x(\d{1,3})/,
+  /[Ss]eason\s*(\d{1,2}).{0,6}?[Ee]pisode\s*(\d{1,3})/,
+];
+const YEAR_PATTERN = /[\(\[]?(19\d{2}|20\d{2})[\)\]]?/;
+const JUNK_TAGS = /\b(1080p|720p|480p|2160p|4k|x264|x265|h264|h265|hevc|web[\s.-]?dl|webrip|bluray|brrip|dvdrip|hdtv|amzn|nf|remux|proper|repack|aac|ac3|dts|multi|dual|extended|uncut)\b/gi;
+
+function extOf(name) { const i = name.lastIndexOf('.'); return i === -1 ? '' : name.slice(i + 1).toLowerCase(); }
+
+function cleanTitle(name) {
+  name = name.replace(/\.[^/.]+$/, '');
+  name = name.replace(/[._]+/g, ' ');
+  name = name.replace(JUNK_TAGS, '');
+  for (const pat of EPISODE_PATTERNS) name = name.replace(pat, '');
+  name = name.replace(/[\[\(].*?[\]\)]/g, '');
+  name = name.replace(/\s{2,}/g, ' ').trim().replace(/^[-_. ]+|[-_. ]+$/g, '');
+  return name || 'Untitled';
+}
+function extractYear(name) { const m = name.match(YEAR_PATTERN); return m ? m[1] : null; }
+function extractEpisode(name) {
+  for (const pat of EPISODE_PATTERNS) { const m = name.match(pat); if (m) return [parseInt(m[1]), parseInt(m[2])]; }
+  return null;
+}
+
+let allFiles = new Map(); // relPath -> File
+let library = { movies: [], shows: [] };
+let currentFilter = 'all';
+let thumbCache = new Map(); // id -> dataURL
+let activePlayerUrl = null;
+
+document.getElementById('add-folder-btn').addEventListener('click', () => document.getElementById('folder-input').click());
+document.getElementById('empty-add-folder-btn').addEventListener('click', () => document.getElementById('folder-input').click());
+document.getElementById('folder-input').addEventListener('change', onFolderPicked);
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('is-active'));
+    tab.classList.add('is-active');
+    currentFilter = tab.dataset.filter;
+    renderLibraryGrid();
+  });
+});
+
+function onFolderPicked(e) {
+  for (const file of e.target.files) {
+    const rel = file.webkitRelativePath || file.name;
+    if (extOf(file.name) && VIDEO_EXTS.has(extOf(file.name))) {
+      allFiles.set(rel, file);
+    }
+  }
+  rebuildLibrary();
+  e.target.value = ''; // allow re-picking the same folder later
+}
+
+function rebuildLibrary() {
+  const dirMap = new Map();
+  for (const [rel, file] of allFiles) {
+    const idx = rel.lastIndexOf('/');
+    const dir = idx === -1 ? '' : rel.slice(0, idx);
+    if (!dirMap.has(dir)) dirMap.set(dir, []);
+    dirMap.get(dir).push({ rel, file });
+  }
+
+  const movies = [], shows = [];
+  for (const [dir, entries] of dirMap) {
+    entries.sort((a, b) => a.file.name.localeCompare(b.file.name));
+    if (entries.length === 1) {
+      const { rel, file } = entries[0];
+      movies.push({ id: rel, title: cleanTitle(file.name), year: extractYear(file.name), file });
+    } else {
+      const dirName = dir.slice(dir.lastIndexOf('/') + 1) || 'Untitled';
+      const seasons = {};
+      const autoCounters = {};
+      for (const { rel, file } of entries) {
+        const se = extractEpisode(file.name);
+        let seasonNum, epNum;
+        if (se) { [seasonNum, epNum] = se; }
+        else { seasonNum = 1; autoCounters[1] = (autoCounters[1] || 0) + 1; epNum = autoCounters[1]; }
+        if (!seasons[seasonNum]) seasons[seasonNum] = [];
+        seasons[seasonNum].push({ id: rel, title: cleanTitle(file.name), episode: epNum, file });
+      }
+      for (const s in seasons) seasons[s].sort((a, b) => a.episode - b.episode);
+      shows.push({ id: dir, title: cleanTitle(dirName), seasons });
+    }
+  }
+  movies.sort((a, b) => a.title.localeCompare(b.title));
+  shows.sort((a, b) => a.title.localeCompare(b.title));
+  library = { movies, shows };
+
+  document.getElementById('empty-state').style.display = (movies.length + shows.length) ? 'none' : 'block';
+  document.getElementById('library-content').style.display = (movies.length + shows.length) ? 'block' : 'none';
+  renderLibraryGrid();
+}
+
+function goLibrary() {
+  document.getElementById('view-show').classList.remove('is-active');
+  document.getElementById('view-library').classList.add('is-active');
+}
+
+function renderLibraryGrid() {
+  const grid = document.getElementById('grid');
+  const query = document.getElementById('global-search').value.toLowerCase().trim();
+  let items = [];
+  if (currentFilter !== 'shows') items = items.concat(library.movies.map(m => ({ ...m, kind: 'movie' })));
+  if (currentFilter !== 'movies') items = items.concat(library.shows.map(s => ({ ...s, kind: 'show' })));
+  if (query) items = items.filter(i => i.title.toLowerCase().includes(query));
+  items.sort((a, b) => a.title.localeCompare(b.title));
+
+  grid.innerHTML = '';
+  for (const item of items) grid.appendChild(buildCard(item));
+}
+
+function buildCard(item) {
+  const card = document.createElement('button');
+  card.className = 'card';
+  const posterId = item.kind === 'show' ? firstEpisode(item)?.id : item.id;
+  const posterFile = item.kind === 'show' ? firstEpisode(item)?.file : item.file;
+
+  card.innerHTML = `
+    <div class="poster">
+      ${item.kind === 'show' ? '<span class="badge-show">Show</span>' : ''}
+      <div class="poster-inner"><div class="poster-fallback">${escapeHtml(item.title)}</div></div>
+    </div>
+    <div class="card-meta">
+      <div class="card-title">${escapeHtml(item.title)}</div>
+      <div class="card-year">${item.kind === 'show' ? seasonCount(item) + ' season' + (seasonCount(item) === 1 ? '' : 's') : (item.year || '')}</div>
+    </div>`;
+
+  card.addEventListener('click', () => item.kind === 'show' ? openShow(item) : playItem(item.file, item.title));
+
+  if (posterFile) {
+    const posterInner = card.querySelector('.poster-inner');
+    observeForThumbnail(posterInner, posterId, posterFile, item.title);
+  }
+  return card;
+}
+
+function firstEpisode(show) { const first = Object.values(show.seasons)[0]; return first ? first[0] : null; }
+function seasonCount(show) { return Object.keys(show.seasons).length; }
+
+const thumbObserver = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      thumbObserver.unobserve(entry.target);
+      const { id, file, title } = entry.target._thumbData;
+      loadThumbnail(id, file, title, entry.target);
+    }
+  }
+}, { rootMargin: '200px' });
+
+function observeForThumbnail(el, id, file, title) {
+  el._thumbData = { id, file, title };
+  thumbObserver.observe(el);
+}
+
+async function loadThumbnail(id, file, title, container) {
+  const cached = thumbCache.get(id);
+  if (cached) { container.innerHTML = `<img src="${cached}" alt="">`; return; }
+  const dataUrl = await generateThumbnail(file);
+  if (dataUrl) {
+    thumbCache.set(id, dataUrl);
+    container.innerHTML = `<img src="${dataUrl}" alt="">`;
+  }
+  // on failure, leave the fallback title card in place
+}
+
+function generateThumbnail(file) {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.muted = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+    const url = URL.createObjectURL(file);
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      URL.revokeObjectURL(url);
+      resolve(result);
+    };
+    video.addEventListener('loadedmetadata', () => {
+      const seekTo = video.duration ? Math.min(90, video.duration * 0.15) : 1;
+      video.currentTime = seekTo;
+    });
+    video.addEventListener('seeked', () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const w = 320;
+        const h = Math.round(w * (video.videoHeight / video.videoWidth || 1.5));
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+        finish(canvas.toDataURL('image/jpeg', 0.72));
+      } catch (err) { finish(null); }
+    });
+    video.addEventListener('error', () => finish(null));
+    setTimeout(() => finish(null), 8000);
+    video.src = url;
+  });
+}
+
+function openShow(show) {
+  document.getElementById('view-library').classList.remove('is-active');
+  document.getElementById('view-show').classList.add('is-active');
+  document.getElementById('show-title').textContent = show.title;
+
+  const pillsEl = document.getElementById('season-pills');
+  const listsEl = document.getElementById('episode-lists');
+  pillsEl.innerHTML = '';
+  listsEl.innerHTML = '';
+
+  const seasonNums = Object.keys(show.seasons);
+  seasonNums.forEach((num, i) => {
+    const pill = document.createElement('button');
+    pill.className = 'pill' + (i === 0 ? ' is-active' : '');
+    pill.textContent = 'Season ' + num;
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('is-active'));
+      pill.classList.add('is-active');
+      document.querySelectorAll('.episode-list').forEach(l => l.hidden = true);
+      document.getElementById('season-' + num).hidden = false;
+    });
+    pillsEl.appendChild(pill);
+
+    const ol = document.createElement('ol');
+    ol.className = 'episode-list';
+    ol.id = 'season-' + num;
+    ol.hidden = i !== 0;
+    for (const ep of show.seasons[num]) {
+      const li = document.createElement('li');
+      li.className = 'episode-row';
+      li.innerHTML = `<button>
+          <span class="episode-num">${String(ep.episode).padStart(2, '0')}</span>
+          <span class="episode-title">${escapeHtml(ep.title)}</span>
+          <span class="episode-play">Play</span>
+        </button>`;
+      li.querySelector('button').addEventListener('click', () => playItem(ep.file, ep.title));
+      ol.appendChild(li);
+    }
+    listsEl.appendChild(ol);
+  });
+}
+
+const MEDIA_ERROR_MESSAGES = {
+  1: 'Playback was aborted.',
+  2: 'A network error interrupted loading the file.',
+  3: "Your browser can't decode this file's audio or video codec.",
+  4: "Your browser doesn't support this file's format at all.",
+};
+
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+const ICON_VOLUME = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9v6h4l5 5V4L9 9H5z"/></svg>';
+const ICON_MUTED = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9v6h4l5 5V4L9 9H5zm11.5 3 2.5 2.5 1.4-1.4L18 12l2.4-2.4L19 8.2 16.5 10.6 14 8.2l-1.4 1.4L15 12l-2.4 2.4 1.4 1.4z"/></svg>';
+const ICON_FULLSCREEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+
+function fmtTime(sec) {
+  if (!isFinite(sec) || sec < 0) return '0:00';
+  sec = Math.floor(sec);
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function fillBar(bar, fraction) {
+  const pct = Math.max(0, Math.min(1, fraction || 0)) * 100;
+  bar.style.background = `linear-gradient(to right, var(--accent) ${pct}%, var(--border) ${pct}%)`;
+}
+
+function playItem(file, title) {
+  const overlay = document.getElementById('player-overlay');
+  const wrap = document.getElementById('player-wrap');
+  document.getElementById('player-title').textContent = title;
+
+  if (activePlayerUrl) URL.revokeObjectURL(activePlayerUrl);
+  activePlayerUrl = URL.createObjectURL(file);
+
+  wrap.innerHTML = `
+    <div class="player-inner">
+      <div class="video-shell" id="video-shell">
+        <video id="player" playsinline autoplay></video>
+        <button class="big-play" id="big-play" aria-label="Play or pause">${ICON_PLAY}</button>
+        <div class="controls-bar" id="controls-bar">
+          <button class="ctl-btn" id="ctl-playpause" aria-label="Play or pause">${ICON_PAUSE}</button>
+          <span class="time-label" id="time-current">0:00</span>
+          <input type="range" id="seek-bar" class="seek-bar" min="0" max="0" step="0.1" value="0">
+          <span class="time-label" id="time-duration">0:00</span>
+          <button class="ctl-btn" id="ctl-mute" aria-label="Mute or unmute">${ICON_VOLUME}</button>
+          <input type="range" id="volume-bar" class="volume-bar" min="0" max="1" step="0.05" value="1">
+          <button class="ctl-btn" id="ctl-fullscreen" aria-label="Fullscreen">${ICON_FULLSCREEN}</button>
+        </div>
+      </div>
+      <p class="audio-hint">No sound? A silent picture usually means the audio codec (often AC3 or DTS in a .mkv) isn't one your browser can decode, even though the video plays fine. VLC handles these; re-encoding the audio to AAC also fixes it.</p>
+    </div>`;
+
+  const video = document.getElementById('player');
+  const shell = document.getElementById('video-shell');
+  const bigPlay = document.getElementById('big-play');
+  const playPauseBtn = document.getElementById('ctl-playpause');
+  const seekBar = document.getElementById('seek-bar');
+  const volumeBar = document.getElementById('volume-bar');
+  const muteBtn = document.getElementById('ctl-mute');
+  const fullscreenBtn = document.getElementById('ctl-fullscreen');
+  const controlsBar = document.getElementById('controls-bar');
+  const timeCurrent = document.getElementById('time-current');
+  const timeDuration = document.getElementById('time-duration');
+
+  let settled = false;
+  let seeking = false;
+  let hideTimer = null;
+
+  const showError = (reason) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(stuckTimer);
+    wrap.innerHTML = `<div class="player-error">
+      <strong>Your browser can't play this file.</strong>
+      ${escapeHtml(reason)} This is usually a codec issue inside a .mkv or .avi file —
+      try opening it in VLC instead, or re-encode it to .mp4 (H.264/AAC video, AAC audio).
+      <br><br><code>${escapeHtml(file.name)}</code>
+    </div>`;
+  };
+  const markLoaded = () => { settled = true; clearTimeout(stuckTimer); };
+
+  video.addEventListener('loadedmetadata', () => {
+    seekBar.max = video.duration || 0;
+    timeDuration.textContent = fmtTime(video.duration);
+  });
+  video.addEventListener('loadeddata', markLoaded);
+  video.addEventListener('playing', markLoaded);
+  video.addEventListener('error', () => {
+    const code = video.error ? video.error.code : null;
+    showError(MEDIA_ERROR_MESSAGES[code] || 'The file failed to load.');
+  });
+
+  const stuckTimer = setTimeout(() => {
+    const stillCurrent = document.getElementById('player') === video;
+    if (!settled && stillCurrent && video.readyState < 2) {
+      showError("It's been stuck loading, so the format likely isn't supported.");
+    }
+  }, 9000);
+
+  // playback controls
+  const setPlayPauseIcon = () => {
+    const icon = video.paused ? ICON_PLAY : ICON_PAUSE;
+    playPauseBtn.innerHTML = icon;
+    bigPlay.innerHTML = ICON_PLAY;
+    bigPlay.classList.toggle('is-hidden', !video.paused);
+  };
+  const togglePlay = () => { video.paused ? video.play() : video.pause(); };
+
+  bigPlay.addEventListener('click', togglePlay);
+  playPauseBtn.addEventListener('click', togglePlay);
+  video.addEventListener('play', setPlayPauseIcon);
+  video.addEventListener('pause', setPlayPauseIcon);
+  video.addEventListener('click', togglePlay);
+
+  video.addEventListener('timeupdate', () => {
+    if (seeking) return;
+    seekBar.value = video.currentTime;
+    fillBar(seekBar, video.currentTime / (video.duration || 1));
+    timeCurrent.textContent = fmtTime(video.currentTime);
+  });
+  seekBar.addEventListener('input', () => {
+    seeking = true;
+    fillBar(seekBar, seekBar.value / (video.duration || 1));
+    timeCurrent.textContent = fmtTime(seekBar.value);
+  });
+  seekBar.addEventListener('change', () => {
+    video.currentTime = parseFloat(seekBar.value);
+    seeking = false;
+  });
+
+  volumeBar.addEventListener('input', () => {
+    video.volume = parseFloat(volumeBar.value);
+    video.muted = video.volume === 0;
+    fillBar(volumeBar, video.volume);
+    muteBtn.innerHTML = video.muted ? ICON_MUTED : ICON_VOLUME;
+  });
+  muteBtn.addEventListener('click', () => {
+    video.muted = !video.muted;
+    muteBtn.innerHTML = video.muted ? ICON_MUTED : ICON_VOLUME;
+  });
+
+  fullscreenBtn.addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else shell.requestFullscreen().catch(() => {});
+  });
+
+  const showControls = () => {
+    controlsBar.classList.remove('is-hidden');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      if (!video.paused) controlsBar.classList.add('is-hidden');
+    }, 2800);
+  };
+  shell.addEventListener('mousemove', showControls);
+  shell.addEventListener('mouseleave', () => { if (!video.paused) controlsBar.classList.add('is-hidden'); });
+  showControls();
+
+  fillBar(volumeBar, 1);
+  video.volume = 1;
+  video.src = activePlayerUrl;
+  overlay.classList.add('is-active');
+}
+
+function closePlayer() {
+  const overlay = document.getElementById('player-overlay');
+  const wrap = document.getElementById('player-wrap');
+  overlay.classList.remove('is-active');
+  wrap.innerHTML = '';
+  if (activePlayerUrl) { URL.revokeObjectURL(activePlayerUrl); activePlayerUrl = null; }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.addEventListener('keydown', (e) => {
+  const overlay = document.getElementById('player-overlay');
+  if (!overlay.classList.contains('is-active')) return;
+  const video = document.getElementById('player');
+  if (e.key === 'Escape') { closePlayer(); }
+  else if (e.key === ' ' && video) { e.preventDefault(); video.paused ? video.play() : video.pause(); }
+});
+</script>
+</body>
+</html>
